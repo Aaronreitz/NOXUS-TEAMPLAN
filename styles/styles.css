@@ -1,7 +1,7 @@
 /* Tailwind v4 Einstieg */
 @import "tailwindcss";
 
-@config "./tailwind.config.js";
+@config "../tailwind.config.js";
 
 /* =========================
    Components (Bootstrap-like)
@@ -50,6 +50,24 @@
   .card-footer {
     @apply px-6 py-3 border-t border-noxus-steel text-right;
   }
+}
+
+/* =========================
+   Scrollbar
+   ========================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f1115;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2f3a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b1d2c;
 }
 
 /* =========================

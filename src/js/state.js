@@ -13,11 +13,7 @@ const _saved = _loadState();
 export const appState = {
   year: _saved?.year ?? _now.getFullYear(),
   month0: _saved?.month0 ?? _now.getMonth(),
-  columns: _saved?.columns ?? [
-    { id: "c1", title: "Vera" },
-    { id: "c2", title: "Tobias" },
-    { id: "c3", title: "Melanie" },
-  ],
+  columns: _saved?.columns ?? Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "" })),
   cells: _saved?.cells ?? {},
 };
 

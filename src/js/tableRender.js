@@ -22,6 +22,7 @@ export function renderPlanTable(dom) {
   const days = daysInMonth(appState.year, appState.month0);
   const sumHours = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
   const sumDays = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
+  const sumNight = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
 
   const thead = `
     <thead>
@@ -73,6 +74,7 @@ export function renderPlanTable(dom) {
         sumHours[col.id] += hoursNum;
         sumDays[col.id] += 1;
       }
+      if (codeVal.trim().toUpperCase() === "N") sumNight[col.id] += 1;
 
       body += `
         <td class="border-b border-noxus-steel px-1 py-0.5">
@@ -91,6 +93,16 @@ export function renderPlanTable(dom) {
 
   const tfoot = `
     <tfoot>
+      <tr>
+        <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1">Nacht</th>
+        ${appState.columns
+          .map(
+            (c) => `
+          <td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${sumNight[c.id]}</td>
+        `,
+          )
+          .join("")}
+      </tr>
       <tr>
         <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1">Tage</th>
         ${appState.columns
