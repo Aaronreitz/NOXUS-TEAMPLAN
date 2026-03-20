@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Noxus-Teamplan</title>
+    <link rel="stylesheet" href="dist.css" />
+  </head>
+
+  <body class="bg-noxus-bg text-noxus-text min-h-screen">
+    <header class="border-b border-noxus-steel">
+      <div class="container py-6">
+        <h1 class="text-3xl font-bold">Noxus-Teamplan</h1>
+      </div>
+    </header>
+
+    <main class="container mt-8">
+      <div class="row gap-y-6">
+        <section class="col col-12">
+          <div class="flex justify-center">
+            <div class="w-full max-w-6xl">
+              <!-- Card: Plan -->
+              <div class="card">
+                <div class="card-header flex items-center justify-between">
+                  <div>
+                    <div class="text-muted text-sm">Monatsplan</div>
+                    <div id="monthTitle" class="text-xl font-bold">–</div>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      id="exportExcelBtn"
+                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
+                    >
+                      Excel Export
+                    </button>
+
+                    <button
+                      id="prevMonth"
+                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
+                    >
+                      ◀
+                    </button>
+
+                    <button
+                      id="nextMonth"
+                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
+                    >
+                      ▶
+                    </button>
+
+                    <button
+                      id="addColBtn"
+                      class="px-3 py-2 rounded-md bg-noxus-red text-white hover:bg-red-800"
+                    >
+                      + Spalte
+                    </button>
+                  </div>
+                </div>
+
+                <div class="card-body space-y-4">
+                  <div
+                    class="overflow-auto rounded-lg border border-noxus-steel"
+                  >
+                    <table
+                      id="planTable"
+                      class="min-w-[700px] w-full text-sm"
+                    ></table>
+                  </div>
+                </div>
+              </div>
+              <!-- /Card -->
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script src="lib/xlsx.bundle.js"></script>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

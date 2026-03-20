@@ -1,0 +1,62 @@
+/* Tailwind v4 Einstieg */
+@import "tailwindcss";
+
+@config "./tailwind.config.js";
+
+/* =========================
+   Components (Bootstrap-like)
+   ========================= */
+@layer components {
+  /* Layout / Grid */
+  .container {
+    @apply max-w-7xl mx-auto px-6;
+  }
+
+  .row {
+    @apply flex flex-wrap -mx-3;
+  }
+
+  .col {
+    @apply px-3 w-full;
+  }
+
+  /* Spalten */
+  .col-4 {
+    @apply w-1/3;
+  }
+  .col-6 {
+    @apply w-1/2;
+  }
+  .col-8 {
+    @apply w-2/3;
+  }
+  .col-12 {
+    @apply w-full;
+  }
+
+  /* Cards / Panels */
+  .card {
+    @apply bg-noxus-panel border border-noxus-steel rounded-xl shadow-lg;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-noxus-steel font-semibold text-lg;
+  }
+
+  .card-body {
+    @apply px-6 py-4;
+  }
+
+  .card-footer {
+    @apply px-6 py-3 border-t border-noxus-steel text-right;
+  }
+}
+
+/* =========================
+   Utilities
+   ========================= */
+@layer utilities {
+  .text-muted {
+    @apply text-noxus-ash;
+  }
+}
