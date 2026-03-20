@@ -54,11 +54,7 @@ export function exportToExcel() {
       if (code.toUpperCase() === "N") sumNightByColumn[column.id] += 1;
       if (code.toUpperCase() === "R") sumOnCallByColumn[column.id] += 1;
 
-      row.push(
-        hoursRaw !== "" && typeof hoursRaw !== "undefined"
-          ? `${code} (${hoursRaw})`
-          : code,
-      );
+      row.push(code);
     }
 
     excelRows.push(row);
@@ -86,7 +82,7 @@ export function exportToExcel() {
   const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
 
   worksheet["!cols"] = [
-    { wch: 10 },
+    { wch: 22 },
     ...appState.columns.map(() => ({ wch: 14 })),
   ];
 
@@ -100,7 +96,7 @@ export function exportToExcel() {
   };
 
   const headerFill = { patternType: "solid", fgColor: { rgb: "1B1F2A" } };
-  const weekendFill = { patternType: "solid", fgColor: { rgb: "FAFAFA" } };
+  const weekendFill = { patternType: "solid", fgColor: { rgb: "F2D0D4" } };
   const footerFill = { patternType: "solid", fgColor: { rgb: "151922" } };
   const onCallFill = { patternType: "solid", fgColor: { rgb: "FFF9DB" } };
 

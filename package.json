@@ -1,17 +1,40 @@
 {
   "name": "noxus-teamplan",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "description": "Noxus Teamplan – monatliche Schichtplanung als Desktop-App",
+  "main": "electron/main.js",
+  "author": "Aaron Reitz",
+  "license": "MIT",
   "type": "commonjs",
+  "scripts": {
+    "start": "npm run build:css && electron .",
+    "build:css": "tailwindcss -i styles/styles.css -o dist.css",
+    "build": "npm run build:css && electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.noxus.teamplan",
+    "productName": "Noxus Teamplan",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "dist.css",
+      "styles.css",
+      "src/**",
+      "lib/**",
+      "assets/**",
+      "electron/**"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "assets/noxus_teamplaner_icon.ico"
+    }
+  },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0",
     "tailwindcss": "^4.1.18"
   }
 }
