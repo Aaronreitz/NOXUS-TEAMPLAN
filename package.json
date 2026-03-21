@@ -4,7 +4,7 @@
   "description": "Noxus Teamplan – monatliche Schichtplanung als Desktop-App",
   "main": "electron/main.js",
   "author": "Aaron Reitz",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "type": "commonjs",
   "scripts": {
     "start": "npm run build:css && electron .",

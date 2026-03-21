@@ -2,36 +2,35 @@
 
 Eine Desktop-App zur monatlichen Schichtplanung – gebaut mit HTML, Tailwind CSS und Electron.
 
+## Download
+
+👉 **[Neueste Version herunterladen](https://github.com/Aaronreitz/NOXUS-TEAMPLAN/releases/latest)**
+
+1. `NoxusTeamplan.zip` herunterladen
+2. Zip entpacken
+3. `Noxus Teamplan.exe` starten – fertig, keine Installation nötig
+
 ## Features
 
 - Monatliche Schichtübersicht als Tabelle
-- Spalten dynamisch hinzufügen
+- Spalten dynamisch hinzufügen & benennen
+- Nachtbereitschaft (N) trägt automatisch ein X am Folgetag ein
+- Zähler für Nachtbereitschaften, Tage und Stunden
 - Excel-Export (XLSX)
 - Dunkles Noxus-Design
 
-## Voraussetzungen
+## Entwicklung
 
-- [Node.js](https://nodejs.org/) (v18+)
-- npm
-
-## Installation
+Voraussetzungen: [Node.js](https://nodejs.org/) v18+
 
 ```bash
 npm install
-```
-
-## Entwicklung
-
-CSS kompilieren und App starten:
-
-```bash
-npm run build:css
 npm start
 ```
 
-## Build (portable EXE)
+## Build (ZIP)
 
-Erstellt eine einzelne portable `.exe` im `dist/`-Ordner:
+Erstellt `dist/NoxusTeamplan.zip` zum Verteilen:
 
 ```bash
 npm run build
@@ -39,4 +38,4 @@ npm run build
 
 ## Lizenz
 
-[MIT](LICENSE) – frei nutzbar, keine Copyleft-Pflichten.
+[GPL v3](LICENSE) – frei nutzbar und veränderbar, aber Änderungen müssen ebenfalls unter GPL v3 veröffentlicht werden.

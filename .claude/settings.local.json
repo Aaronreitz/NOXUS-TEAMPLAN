@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"dir /s /b a:\\\\Entwicklung\\\\Noxus-Teamplan\\\\src\")",
+      "Bash(cmd /c \"dir /a /b a:\\\\Entwicklung\\\\Noxus-Teamplan\")",
+      "Bash(npm run:*)"
+    ]
+  }
+}
