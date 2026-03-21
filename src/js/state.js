@@ -13,7 +13,9 @@ const _saved = _loadState();
 export const appState = {
   year: _saved?.year ?? _now.getFullYear(),
   month0: _saved?.month0 ?? _now.getMonth(),
-  columns: _saved?.columns ?? Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "" })),
+  columns:
+    _saved?.columns ??
+    Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "" })),
   cells: _saved?.cells ?? {},
 };
 
@@ -51,6 +53,16 @@ export function cleanupCell(dateKeyStr, colId) {
       delete appState.cells[dateKeyStr];
     }
   }
+}
+
+export function effectiveCode(dk, colId) {
+  const stored = appState.cells?.[dk]?.[colId]?.code ?? "";
+  if (stored !== "") return stored;
+  const [y, m, d] = dk.split("-").map(Number);
+  const prev = new Date(y, m - 1, d - 1);
+  const prevDk = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+  const prevCode = appState.cells?.[prevDk]?.[colId]?.code ?? "";
+  return prevCode.trim().toUpperCase() === "N" ? "X" : "";
 }
 
 export function nextColumnId() {

@@ -1,4 +1,4 @@
-import { appState } from "./state.js";
+import { appState, effectiveCode } from "./state.js";
 import {
   pad2,
   dateKey,
@@ -43,7 +43,7 @@ export function exportToExcel() {
         continue;
       }
 
-      const code = (cell.code ?? "").trim();
+      const code = effectiveCode(dk, column.id).trim();
       const hoursRaw = cell.hours;
 
       const hoursNumber = Number(String(hoursRaw ?? "").replace(",", "."));

@@ -1,4 +1,4 @@
-import { appState } from "./state.js";
+import { appState, effectiveCode } from "./state.js";
 import {
   pad2,
   dateKey,
@@ -67,6 +67,7 @@ export function renderPlanTable(dom) {
     for (const col of appState.columns) {
       const cell = appState.cells?.[dk]?.[col.id] ?? { code: "", hours: "" };
       const codeVal = cell.code ?? "";
+      const codePlaceholder = effectiveCode(dk, col.id);
       const hoursVal = (cell.hours ?? "") === 0 ? "0" : (cell.hours ?? "");
 
       const hoursNum = Number(String(cell.hours ?? "").replace(",", "."));
@@ -80,7 +81,7 @@ export function renderPlanTable(dom) {
         <td class="border-b border-noxus-steel px-1 py-0.5">
           <div class="grid grid-cols-[1fr_auto] items-center gap-1">
             <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/60 px-1.5 text-xs leading-none"
-                   value="${escapeHtml(codeVal)}" data-code="${dk}|${col.id}" />
+                   value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(codePlaceholder)}" data-code="${dk}|${col.id}" />
             <input class="w-12 h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-[10px] leading-none text-right tabular-nums"
                    value="${escapeHtml(String(hoursVal))}" data-hours="${dk}|${col.id}" inputmode="decimal" />
           </div>
