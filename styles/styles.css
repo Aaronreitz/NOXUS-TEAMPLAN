@@ -1,7 +1,7 @@
 /* Tailwind v4 Einstieg */
 @import "tailwindcss";
 
-@config "../tailwind.config.js";
+@config "../tailwind.config.mjs";
 
 /* =========================
    Components (Bootstrap-like)

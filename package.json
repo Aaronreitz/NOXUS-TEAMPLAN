@@ -11,27 +11,7 @@
     "build:css": "tailwindcss -i styles/styles.css -o dist.css",
     "build": "npm run build:css && electron-packager . \"Noxus Teamplan\" --platform=win32 --arch=x64 --icon=assets/noxus_teamplaner_icon.ico --out=dist --overwrite && powershell -Command \"Compress-Archive -Force -Path 'dist/Noxus Teamplan-win32-x64' -DestinationPath dist/NoxusTeamplan.zip\""
   },
-  "build": {
-    "appId": "com.noxus.teamplan",
-    "productName": "Noxus Teamplan",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "index.html",
-      "dist.css",
-      "styles.css",
-      "src/**",
-      "lib/**",
-      "assets/**",
-      "electron/**"
-    ],
-    "win": {
-      "target": "dir",
-      "icon": "assets/noxus_teamplaner_icon.ico"
-    }
-  },
-  "devDependencies": {
+"devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
     "electron": "^34.0.0",
     "electron-builder": "^25.0.0",

@@ -14,9 +14,9 @@ Eine Desktop-App zur monatlichen Schichtplanung – gebaut mit HTML, Tailwind CS
 
 - Monatliche Schichtübersicht als Tabelle
 - Spalten dynamisch hinzufügen & benennen
+- Soll- und Ist-Stunden, Rufbereitschaften, Nachtbereitschaften und Tage pro Spalte
 - Nachtbereitschaft (N) trägt automatisch ein X am Folgetag ein
-- Zähler für Nachtbereitschaften, Tage und Stunden
-- Excel-Export (XLSX)
+- Excel-Export als Dienstplan mit Kommentarspalte
 - Dunkles Noxus-Design
 
 ## Entwicklung

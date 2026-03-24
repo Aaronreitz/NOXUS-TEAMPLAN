@@ -15,7 +15,7 @@ export const appState = {
   month0: _saved?.month0 ?? _now.getMonth(),
   columns:
     _saved?.columns ??
-    Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "" })),
+    Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "", soll: "" })),
   cells: _saved?.cells ?? {},
 };
 

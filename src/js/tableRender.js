@@ -21,13 +21,13 @@ export function renderPlanTable(dom) {
 
   const days = daysInMonth(appState.year, appState.month0);
   const sumHours = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
-  const sumDays = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
+  const sumDays  = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
   const sumNight = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
 
   const thead = `
     <thead>
       <tr>
-        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b border-noxus-steel px-2 py-1 w-20">Tag</th>
+        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b border-noxus-steel px-2 py-1 w-16">Tag</th>
         ${appState.columns
           .map(
             (c) => `
@@ -67,21 +67,21 @@ export function renderPlanTable(dom) {
     for (const col of appState.columns) {
       const cell = appState.cells?.[dk]?.[col.id] ?? { code: "", hours: "" };
       const codeVal = cell.code ?? "";
-      const codePlaceholder = effectiveCode(dk, col.id);
+      const effCode = effectiveCode(dk, col.id);
       const hoursVal = (cell.hours ?? "") === 0 ? "0" : (cell.hours ?? "");
 
+      if (effCode !== "") sumDays[col.id] += 1;
+
       const hoursNum = Number(String(cell.hours ?? "").replace(",", "."));
-      if (!Number.isNaN(hoursNum) && hoursNum > 0) {
-        sumHours[col.id] += hoursNum;
-        sumDays[col.id] += 1;
-      }
+      if (!Number.isNaN(hoursNum) && hoursNum > 0) sumHours[col.id] += hoursNum;
+
       if (codeVal.trim().toUpperCase() === "N") sumNight[col.id] += 1;
 
       body += `
         <td class="border-b border-noxus-steel px-1 py-0.5">
           <div class="grid grid-cols-[1fr_auto] items-center gap-1">
             <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/60 px-1.5 text-xs leading-none"
-                   value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(codePlaceholder)}" data-code="${dk}|${col.id}" />
+                   value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(effCode)}" data-code="${dk}|${col.id}" />
             <input class="w-12 h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-[10px] leading-none text-right tabular-nums"
                    value="${escapeHtml(String(hoursVal))}" data-hours="${dk}|${col.id}" inputmode="decimal" />
           </div>
@@ -92,38 +92,27 @@ export function renderPlanTable(dom) {
     body += `</tr>`;
   }
 
+  const footerRow = (label, cells) => `
+    <tr>
+      <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-xs">${label}</th>
+      ${cells}
+    </tr>
+  `;
+
+  const cell = (content) =>
+    `<td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${content}</td>`;
+
   const tfoot = `
     <tfoot>
-      <tr>
-        <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1">Nacht</th>
-        ${appState.columns
-          .map(
-            (c) => `
-          <td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${sumNight[c.id]}</td>
-        `,
-          )
-          .join("")}
-      </tr>
-      <tr>
-        <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1">Tage</th>
-        ${appState.columns
-          .map(
-            (c) => `
-          <td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs">${sumDays[c.id]}</td>
-        `,
-          )
-          .join("")}
-      </tr>
-      <tr>
-        <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1">Stunden</th>
-        ${appState.columns
-          .map(
-            (c) => `
-          <td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${sumHours[c.id].toFixed(2)}</td>
-        `,
-          )
-          .join("")}
-      </tr>
+      ${footerRow("Soll", appState.columns.map((c) => `
+        <td class="bg-noxus-panel border-t border-noxus-steel px-1 py-0.5">
+          <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-xs text-right tabular-nums"
+                 value="${escapeHtml(String(c.soll ?? ""))}" data-soll="${c.id}" inputmode="decimal" />
+        </td>
+      `).join(""))}
+      ${footerRow("Ist",  appState.columns.map((c) => cell(sumHours[c.id].toFixed(2))).join(""))}
+      ${footerRow("NB's", appState.columns.map((c) => cell(sumNight[c.id])).join(""))}
+      ${footerRow("Tage", appState.columns.map((c) => cell(sumDays[c.id])).join(""))}
     </tfoot>
   `;
 

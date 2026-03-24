@@ -16,13 +16,16 @@ export function wireEvents(dom) {
       ? e.target
       : e.target.closest("td")?.querySelector("input[data-code]") ?? e.target.closest("td")?.querySelector("input");
     if (!input) { _pendingFocus = null; return; }
-    const codeKey = input.getAttribute("data-code");
+    const codeKey  = input.getAttribute("data-code");
     const hoursKey = input.getAttribute("data-hours");
+    const sollKey  = input.getAttribute("data-soll");
     _pendingFocus = codeKey
-      ? { attr: "data-code", key: codeKey }
+      ? { attr: "data-code",  key: codeKey }
       : hoursKey
         ? { attr: "data-hours", key: hoursKey }
-        : null;
+        : sollKey
+          ? { attr: "data-soll", key: sollKey }
+          : null;
   });
   dom.addColBtn.addEventListener("click", () => {
     appState.columns.push({ id: nextColumnId(), title: "Neu" });
@@ -124,6 +127,19 @@ export function wireEvents(dom) {
       saveState();
       renderPlanTable(dom);
       refocusAfterRender();
+      return;
+    }
+
+    const sollKey = t.getAttribute?.("data-soll");
+    if (sollKey) {
+      const col = appState.columns.find((c) => c.id === sollKey);
+      if (!col) return;
+      const raw = t.value.trim().replace(",", ".");
+      const num = raw === "" ? "" : Number(raw);
+      const newSoll = Number.isNaN(num) ? "" : num;
+      if (newSoll === (col.soll ?? "")) return;
+      col.soll = newSoll;
+      saveState();
     }
   });
 }
