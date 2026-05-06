@@ -34,7 +34,7 @@ export function exportToExcel() {
       const cell = appState.cells?.[dk]?.[column.id];
       const code = effectiveCode(dk, column.id).trim();
 
-      if (code !== "") sumDaysByColumn[column.id] += 1;
+      if (code !== "" && !/^-+$/.test(code)) sumDaysByColumn[column.id] += 1;
 
       if (cell) {
         const hoursNumber = Number(String(cell.hours ?? "").replace(",", "."));
@@ -48,7 +48,7 @@ export function exportToExcel() {
       row.push(code);
     }
 
-    row.push(""); // Kommentar
+    row.push(appState.comments?.[dk] ?? ""); // Kommentar
     excelRows.push(row);
   }
 

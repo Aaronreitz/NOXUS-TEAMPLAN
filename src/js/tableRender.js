@@ -27,11 +27,11 @@ export function renderPlanTable(dom) {
   const thead = `
     <thead>
       <tr>
-        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b border-noxus-steel px-2 py-1 w-16">Tag</th>
+        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b-2 border-noxus-steel px-2 py-1 w-16">Tag</th>
         ${appState.columns
           .map(
             (c) => `
-          <th class="sticky top-0 z-20 bg-noxus-panel border-b border-noxus-steel px-2 py-1 whitespace-nowrap">
+          <th class="sticky top-0 z-20 bg-noxus-panel border-b border-l-2 border-noxus-steel px-2 py-1 whitespace-nowrap">
             <div class="flex items-center gap-2">
               <input class="w-20 bg-noxus-bg border border-noxus-steel rounded-md px-2 py-1 text-xs"
                      value="${escapeHtml(c.title)}" data-coltitle="${c.id}" />
@@ -42,6 +42,7 @@ export function renderPlanTable(dom) {
         `,
           )
           .join("")}
+        <th class="sticky top-0 z-20 bg-noxus-panel border-b border-l-2 border-noxus-steel px-2 py-1 text-left text-xs font-bold" style="width:350px; min-width:350px;">Kommentar</th>
       </tr>
     </thead>
   `;
@@ -58,7 +59,7 @@ export function renderPlanTable(dom) {
 
     body += `<tr class="${rowClass}">`;
     body += `
-      <td class="sticky left-0 z-10 ${leftBg} border-b border-noxus-steel px-2 py-0.5 leading-tight">
+      <td class="sticky left-0 z-10 ${leftBg} border-b-2 border-noxus-steel px-2 py-0.5 leading-tight">
         <div class="text-xs font-semibold">${pad2(d)}.</div>
         <div class="text-[10px] text-muted">${wk}</div>
       </td>
@@ -70,7 +71,7 @@ export function renderPlanTable(dom) {
       const effCode = effectiveCode(dk, col.id);
       const hoursVal = (cell.hours ?? "") === 0 ? "0" : (cell.hours ?? "");
 
-      if (effCode !== "") sumDays[col.id] += 1;
+      if (effCode !== "" && !/^-+$/.test(effCode.trim())) sumDays[col.id] += 1;
 
       const hoursNum = Number(String(cell.hours ?? "").replace(",", "."));
       if (!Number.isNaN(hoursNum) && hoursNum > 0) sumHours[col.id] += hoursNum;
@@ -78,41 +79,54 @@ export function renderPlanTable(dom) {
       if (codeVal.trim().toUpperCase() === "N") sumNight[col.id] += 1;
 
       body += `
-        <td class="border-b border-noxus-steel px-1 py-0.5">
+        <td class="border-b border-l-2 border-noxus-steel px-1 py-0.5">
           <div class="grid grid-cols-[1fr_auto] items-center gap-1">
-            <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/60 px-1.5 text-xs leading-none"
+            <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/60 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
                    value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(effCode)}" data-code="${dk}|${col.id}" />
-            <input class="w-12 h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-[10px] leading-none text-right tabular-nums"
+            <input class="w-12 h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-[10px] leading-none text-right tabular-nums focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
                    value="${escapeHtml(String(hoursVal))}" data-hours="${dk}|${col.id}" inputmode="decimal" />
           </div>
         </td>
       `;
     }
 
+    const commentVal = appState.comments?.[dk] ?? "";
+    body += `
+      <td class="border-b border-l-2 border-noxus-steel px-1 py-0.5" style="width:350px; min-width:350px;">
+        <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/30 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
+               value="${escapeHtml(commentVal)}" data-comment="${dk}" />
+      </td>
+    `;
     body += `</tr>`;
   }
 
   const footerRow = (label, cells) => `
     <tr>
-      <th class="sticky left-0 bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-xs">${label}</th>
+      <th class="sticky left-0 bg-noxus-panel border-t-2 border-noxus-steel px-2 py-1 text-xs">${label}</th>
       ${cells}
     </tr>
   `;
 
   const cell = (content) =>
-    `<td class="bg-noxus-panel border-t border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${content}</td>`;
+    `<td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${content}</td>`;
+  const commentCell = (key) => `
+    <td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-1 py-0.5" style="width:350px; min-width:350px;">
+      <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/30 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
+             value="${escapeHtml(appState.comments?.[key] ?? "")}" data-comment="${key}" />
+    </td>`;
 
   const tfoot = `
     <tfoot>
       ${footerRow("Soll", appState.columns.map((c) => `
-        <td class="bg-noxus-panel border-t border-noxus-steel px-1 py-0.5">
-          <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-xs text-right tabular-nums"
+        <td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-1 py-0.5">
+          <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-xs text-right tabular-nums focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
                  value="${escapeHtml(String(c.soll ?? ""))}" data-soll="${c.id}" inputmode="decimal" />
         </td>
-      `).join(""))}
-      ${footerRow("Ist",  appState.columns.map((c) => cell(sumHours[c.id].toFixed(2))).join(""))}
-      ${footerRow("NB's", appState.columns.map((c) => cell(sumNight[c.id])).join(""))}
-      ${footerRow("Tage", appState.columns.map((c) => cell(sumDays[c.id])).join(""))}
+      `).join("") + commentCell("_soll"))}
+      ${footerRow("Ist",  appState.columns.map((c) => cell(sumHours[c.id].toFixed(2))).join("") + commentCell("_ist"))}
+      ${footerRow("NB's", appState.columns.map((c) => cell(sumNight[c.id])).join("") + commentCell("_nbs"))}
+      ${footerRow("Tage", appState.columns.map((c) => cell(sumDays[c.id])).join("") + commentCell("_tage"))}
+
     </tfoot>
   `;
 

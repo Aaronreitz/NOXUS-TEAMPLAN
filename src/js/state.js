@@ -17,6 +17,7 @@ export const appState = {
     _saved?.columns ??
     Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "", soll: "" })),
   cells: _saved?.cells ?? {},
+  comments: _saved?.comments ?? {},
 };
 
 export function saveState() {
@@ -27,6 +28,7 @@ export function saveState() {
       month0: appState.month0,
       columns: appState.columns,
       cells: appState.cells,
+      comments: appState.comments,
     }),
   );
 }

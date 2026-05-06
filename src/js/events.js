@@ -16,16 +16,19 @@ export function wireEvents(dom) {
       ? e.target
       : e.target.closest("td")?.querySelector("input[data-code]") ?? e.target.closest("td")?.querySelector("input");
     if (!input) { _pendingFocus = null; return; }
-    const codeKey  = input.getAttribute("data-code");
-    const hoursKey = input.getAttribute("data-hours");
-    const sollKey  = input.getAttribute("data-soll");
+    const codeKey    = input.getAttribute("data-code");
+    const hoursKey   = input.getAttribute("data-hours");
+    const sollKey    = input.getAttribute("data-soll");
+    const commentKey = input.getAttribute("data-comment");
     _pendingFocus = codeKey
-      ? { attr: "data-code",  key: codeKey }
+      ? { attr: "data-code",    key: codeKey }
       : hoursKey
-        ? { attr: "data-hours", key: hoursKey }
+        ? { attr: "data-hours",  key: hoursKey }
         : sollKey
           ? { attr: "data-soll", key: sollKey }
-          : null;
+          : commentKey
+            ? { attr: "data-comment", key: commentKey }
+            : null;
   });
   dom.addColBtn.addEventListener("click", () => {
     appState.columns.push({ id: nextColumnId(), title: "Neu" });
@@ -139,6 +142,16 @@ export function wireEvents(dom) {
       const newSoll = Number.isNaN(num) ? "" : num;
       if (newSoll === (col.soll ?? "")) return;
       col.soll = newSoll;
+      saveState();
+      return;
+    }
+
+    const commentKey = t.getAttribute?.("data-comment");
+    if (commentKey) {
+      const newVal = t.value;
+      if (newVal === (appState.comments[commentKey] ?? "")) return;
+      if (newVal === "") delete appState.comments[commentKey];
+      else appState.comments[commentKey] = newVal;
       saveState();
     }
   });
