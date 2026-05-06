@@ -27,7 +27,12 @@ export function renderPlanTable(dom) {
   const thead = `
     <thead>
       <tr>
-        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b-2 border-noxus-steel px-2 py-1 w-16">Tag</th>
+        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b-2 border-noxus-steel px-2 py-1 w-24">
+          <div class="flex items-center gap-1.5">
+            <span class="w-5 text-center text-green-400 text-xs flex-shrink-0">✓</span>
+            <span>Tag</span>
+          </div>
+        </th>
         ${appState.columns
           .map(
             (c) => `
@@ -55,13 +60,28 @@ export function renderPlanTable(dom) {
     const weekend = isWeekend(appState.year, appState.month0, d);
 
     const rowClass = weekend ? "bg-noxus-red/10" : "";
-    const leftBg = weekend ? "bg-noxus-red/15" : "bg-noxus-panel";
+    // noxus-red (#8b1d2c) at 15% blended over noxus-panel (#151821) → opaque solid for sticky cell
+    const leftBg = weekend ? "" : "bg-noxus-panel";
+    const leftStyle = weekend ? 'style="background-color:#271923"' : "";
+
+    const hasN = appState.columns.some(
+      (col) => (appState.cells?.[dk]?.[col.id]?.code ?? "").trim().toUpperCase() === "N",
+    );
+    const hasTD = appState.columns.some(
+      (col) => (appState.cells?.[dk]?.[col.id]?.code ?? "").trim().toUpperCase() === "TD",
+    );
+    const covered = hasN && hasTD;
 
     body += `<tr class="${rowClass}">`;
     body += `
-      <td class="sticky left-0 z-10 ${leftBg} border-b-2 border-noxus-steel px-2 py-0.5 leading-tight">
-        <div class="text-xs font-semibold">${pad2(d)}.</div>
-        <div class="text-[10px] text-muted">${wk}</div>
+      <td class="sticky left-0 z-10 ${leftBg} border-b-2 border-noxus-steel px-2 py-0.5 w-24" ${leftStyle}>
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 text-center flex-shrink-0">${covered ? '<span class="text-green-400 font-bold">✓</span>' : ""}</span>
+          <div class="leading-tight">
+            <div class="text-xs font-semibold">${pad2(d)}.</div>
+            <div class="text-[10px] text-muted">${wk}</div>
+          </div>
+        </div>
       </td>
     `;
 
@@ -102,7 +122,12 @@ export function renderPlanTable(dom) {
 
   const footerRow = (label, cells) => `
     <tr>
-      <th class="sticky left-0 bg-noxus-panel border-t-2 border-noxus-steel px-2 py-1 text-xs">${label}</th>
+      <th class="sticky left-0 z-10 bg-noxus-panel border-t-2 border-noxus-steel px-2 py-1 text-xs w-24">
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 flex-shrink-0"></span>
+          <span>${label}</span>
+        </div>
+      </th>
       ${cells}
     </tr>
   `;
