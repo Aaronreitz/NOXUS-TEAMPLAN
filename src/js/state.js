@@ -57,6 +57,8 @@ export function cleanupCell(dateKeyStr, colId) {
   }
 }
 
+// TODO (code smell): pad2 / dateKey aus dateUtils.js importieren statt hier zu duplizieren.
+// Aktuell wird die Datumslogik manuell nachgebaut — bei einer Änderung an dateUtils bricht das still.
 export function effectiveCode(dk, colId) {
   const stored = appState.cells?.[dk]?.[colId]?.code ?? "";
   if (stored !== "") return stored;

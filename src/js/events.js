@@ -31,7 +31,7 @@ export function wireEvents(dom) {
             : null;
   });
   dom.addColBtn.addEventListener("click", () => {
-    appState.columns.push({ id: nextColumnId(), title: "Neu" });
+    appState.columns.push({ id: nextColumnId(), title: "Neu", soll: "" });
     saveState();
     renderPlanTable(dom);
   });
@@ -93,6 +93,10 @@ export function wireEvents(dom) {
 
   dom.exportExcelBtn.addEventListener("click", exportToExcel);
 
+  // TODO: Tab-Navigation — _pendingFocus wird nur per mousedown gesetzt, nicht per Tab.
+  // Nach einer Eingabe + Tab re-rendert die Tabelle und der Fokus geht verloren.
+  // Fix: keydown auf Tab abfangen, nächstes Input-Element per DOM-Reihenfolge ermitteln
+  // und als _pendingFocus setzen bevor focusout feuert.
   dom.planTable.addEventListener("focusout", (e) => {
     const t = e.target;
     function refocusAfterRender() {
@@ -106,9 +110,9 @@ export function wireEvents(dom) {
     const codeKey = t.getAttribute?.("data-code");
     if (codeKey) {
       const [dk, colId] = codeKey.split("|");
-      const cell = getOrCreateCell(dk, colId);
       const newCode = t.value.trim();
-      if (newCode === (cell.code ?? "")) return;
+      if (newCode === (appState.cells?.[dk]?.[colId]?.code ?? "")) return;
+      const cell = getOrCreateCell(dk, colId);
       cell.code = newCode;
       cleanupCell(dk, colId);
       saveState();
@@ -120,11 +124,11 @@ export function wireEvents(dom) {
     const hoursKey = t.getAttribute?.("data-hours");
     if (hoursKey) {
       const [dk, colId] = hoursKey.split("|");
-      const cell = getOrCreateCell(dk, colId);
       const raw = t.value.trim().replace(",", ".");
       const num = raw === "" ? "" : Number(raw);
       const newHours = Number.isNaN(num) ? "" : num;
-      if (newHours === (cell.hours ?? "")) return;
+      if (newHours === (appState.cells?.[dk]?.[colId]?.hours ?? "")) return;
+      const cell = getOrCreateCell(dk, colId);
       cell.hours = newHours;
       cleanupCell(dk, colId);
       saveState();

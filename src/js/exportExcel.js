@@ -59,7 +59,7 @@ export function exportToExcel() {
     "Soll",
     ...appState.columns.map((c) => {
       const n = Number(String(c.soll ?? "").replace(",", "."));
-      return Number.isNaN(n) || c.soll === "" ? "" : n;
+      return Number.isNaN(n) || c.soll == null || c.soll === "" ? "" : n;
     }),
     "",
   ]);
