@@ -53,6 +53,21 @@
 }
 
 /* =========================
+   Button Lift Effect
+   ========================= */
+.card-header button {
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+.card-header button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+.card-header button:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* =========================
    Scrollbar
    ========================= */
 ::-webkit-scrollbar {

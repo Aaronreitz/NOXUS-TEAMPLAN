@@ -18,6 +18,7 @@ export const appState = {
     Array.from({ length: 7 }, (_, i) => ({ id: `c${i + 1}`, title: "", soll: "" })),
   cells: _saved?.cells ?? {},
   comments: _saved?.comments ?? {},
+  manualCovered: _saved?.manualCovered ?? {},
 };
 
 export function saveState() {
@@ -29,6 +30,7 @@ export function saveState() {
       columns: appState.columns,
       cells: appState.cells,
       comments: appState.comments,
+      manualCovered: appState.manualCovered,
     }),
   );
 }
@@ -67,6 +69,14 @@ export function effectiveCode(dk, colId) {
   const prevDk = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
   const prevCode = appState.cells?.[prevDk]?.[colId]?.code ?? "";
   return prevCode.trim().toUpperCase() === "N" ? "X" : "";
+}
+
+export function toggleManualCovered(dk) {
+  if (appState.manualCovered[dk]) {
+    delete appState.manualCovered[dk];
+  } else {
+    appState.manualCovered[dk] = true;
+  }
 }
 
 export function nextColumnId() {

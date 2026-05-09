@@ -38,14 +38,14 @@
                       id="prevMonth"
                       class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
                     >
-                      ◀
+                      <span style="font-size:1.4rem;line-height:0">‹</span>
                     </button>
 
                     <button
                       id="nextMonth"
                       class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
                     >
-                      ▶
+                      <span style="font-size:1.4rem;line-height:0">›</span>
                     </button>
 
                     <button
@@ -74,6 +74,32 @@
         </section>
       </div>
     </main>
+    <!-- Kalender-Modal -->
+    <div id="calendarModal" class="fixed inset-0 z-50 items-center justify-center" style="display:none;background:rgba(0,0,0,0.75)">
+      <div class="bg-noxus-panel border border-noxus-steel rounded-xl shadow-2xl" style="width:440px;max-width:95vw">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-noxus-steel">
+          <span id="calModalTitle" class="font-bold text-base"></span>
+          <div class="flex gap-2">
+            <button id="calModalPrint" class="px-3 py-1 text-xs rounded border border-noxus-steel hover:bg-noxus-steel">Drucken</button>
+            <button id="calModalClose" class="px-3 py-1 text-xs rounded border border-noxus-steel hover:bg-noxus-steel">✕</button>
+          </div>
+        </div>
+        <div id="calModalGrid" class="p-4"></div>
+      </div>
+    </div>
+
+    <style>
+      @media print {
+        body > *:not(#calendarModal) { display: none !important; }
+        #calendarModal {
+          display: block !important;
+          position: static !important;
+          background: transparent !important;
+        }
+        #calModalPrint, #calModalClose { display: none !important; }
+      }
+    </style>
+
     <script src="src/lib/xlsx.bundle.js"></script>
     <script type="module" src="src/js/main.js"></script>
   </body>

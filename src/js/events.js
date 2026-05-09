@@ -4,9 +4,11 @@ import {
   getOrCreateCell,
   cleanupCell,
   saveState,
+  toggleManualCovered,
 } from "./state.js";
 import { renderPlanTable } from "./tableRender.js";
 import { exportToExcel } from "./exportExcel.js";
+import { openCalendarModal, closeCalendarModal } from "./calendarModal.js";
 
 export function wireEvents(dom) {
   let _pendingFocus = null; // { attr: "data-code"|"data-hours", key: string }
@@ -69,6 +71,18 @@ export function wireEvents(dom) {
 
   dom.planTable.addEventListener("click", (e) => {
     if (e.target.tagName === "INPUT") return;
+
+    const calBtn = e.target.closest?.("[data-calview]");
+    if (calBtn) { openCalendarModal(calBtn.getAttribute("data-calview")); return; }
+
+    const coverBtn = e.target.closest?.("[data-togglecover]");
+    if (coverBtn) {
+      toggleManualCovered(coverBtn.getAttribute("data-togglecover"));
+      saveState();
+      renderPlanTable(dom);
+      return;
+    }
+
     const td = e.target.closest("td");
     if (td) {
       const input = td.querySelector("input[data-code]") ?? td.querySelector("input");
@@ -92,6 +106,12 @@ export function wireEvents(dom) {
   });
 
   dom.exportExcelBtn.addEventListener("click", exportToExcel);
+
+  document.getElementById("calModalClose").addEventListener("click", closeCalendarModal);
+  document.getElementById("calModalPrint").addEventListener("click", () => window.print());
+  document.getElementById("calendarModal").addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) closeCalendarModal();
+  });
 
   // TODO: Tab-Navigation — _pendingFocus wird nur per mousedown gesetzt, nicht per Tab.
   // Nach einer Eingabe + Tab re-rendert die Tabelle und der Fokus geht verloren.
