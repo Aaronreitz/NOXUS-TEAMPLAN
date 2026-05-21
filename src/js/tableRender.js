@@ -8,15 +8,16 @@ import {
   monthTitle,
 } from "./dateUtils.js";
 
-function cellBgStyle(code) {
-  switch (code.trim().toUpperCase()) {
-    case "N":  return "background-color:#1a2d50;";
-    case "TD": return "background-color:#142d25;";
-    case "X":  return "background-color:#181f38;";
-    case "U":  return "background-color:#332815;";
-    case "KR": return "background-color:#2e1520;";
-    default:   return "";
-  }
+/* ---------- helpers ---------- */
+
+function statusClass(code) {
+  const c = String(code || "").trim().toUpperCase();
+  if (c.startsWith("KR")) return "s-kr";
+  if (c.startsWith("TD")) return "s-td";
+  if (c.startsWith("N"))  return "s-n";
+  if (c.startsWith("X"))  return "s-x";
+  if (c.startsWith("U"))  return "s-u";
+  return "";
 }
 
 function escapeHtml(str) {
@@ -27,6 +28,23 @@ function escapeHtml(str) {
     .replaceAll('"', "&quot;");
 }
 
+function initials(name) {
+  const s = String(name || "").trim();
+  if (!s) return "?";
+  const parts = s.split(/\s+/);
+  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
+}
+
+/* Inline SVG icons (Lucide-style). Keep monochrome. */
+const SVG_CAL =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>';
+const SVG_X =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const SVG_CHECK =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+/* ---------- main render ---------- */
+
 export function renderPlanTable(dom) {
   dom.monthTitle.textContent = monthTitle(appState.year, appState.month0);
 
@@ -35,102 +53,85 @@ export function renderPlanTable(dom) {
   const sumDays  = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
   const sumNight = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
 
+  /* ---------- thead — person cards ---------- */
   const thead = `
     <thead>
       <tr>
-        <th class="sticky top-0 left-0 z-30 bg-noxus-panel border-b-2 border-noxus-steel px-2 py-1 w-24">
-          <div class="flex items-center gap-1.5">
-            <span class="w-5 text-center text-green-400 text-xs flex-shrink-0">✓</span>
-            <span>Tag</span>
-          </div>
-        </th>
-        ${appState.columns
-          .map(
-            (c) => `
-          <th class="sticky top-0 z-20 bg-noxus-panel border-b border-l-2 border-noxus-steel px-2 py-1 whitespace-nowrap">
-            <div class="flex items-center gap-2">
-              <input class="w-20 bg-noxus-bg border border-noxus-steel rounded-md px-2 py-1 text-xs"
-                     value="${escapeHtml(c.title)}" data-coltitle="${c.id}" />
-              <button class="px-2 py-1 rounded-md border border-noxus-steel hover:bg-noxus-panel text-muted text-xs"
-                      data-calview="${c.id}">⊞</button>
-              <button class="px-2 py-1 rounded-md border border-noxus-steel hover:bg-noxus-panel text-muted text-xs"
-                      data-coldelete="${c.id}">✕</button>
+        <th class="day-th">Tag</th>
+        ${appState.columns.map((c) => `
+          <th>
+            <div class="person">
+              <div class="who">
+                <input class="name" value="${escapeHtml(c.title)}" data-coltitle="${c.id}" />
+              </div>
+              <div class="meta">
+                <button data-calview="${c.id}" title="Kalender" aria-label="Kalender">${SVG_CAL}</button>
+                <button class="danger" data-coldelete="${c.id}" title="Entfernen" aria-label="Entfernen">${SVG_X}</button>
+              </div>
             </div>
           </th>
-        `,
-          )
-          .join("")}
-        <th class="sticky top-0 z-20 bg-noxus-panel border-b border-l-2 border-noxus-steel px-2 py-1 text-left text-xs font-bold" style="width:350px; min-width:350px;">Kommentar</th>
+        `).join("")}
+        <th class="comment-th">Kommentar</th>
       </tr>
     </thead>
   `;
 
+  /* ---------- tbody — one row per day ---------- */
   let body = "";
-
   for (let d = 1; d <= days; d++) {
     const dk = dateKey(appState.year, appState.month0, d);
-    const wk = weekdayShort(appState.year, appState.month0, d);
+    const wk = weekdayShort(appState.year, appState.month0, d).replace(".", "");
     const weekend = isWeekend(appState.year, appState.month0, d);
-
-    const rowClass = weekend ? "bg-noxus-red/10" : "";
-    // noxus-red (#8b1d2c) at 15% blended over noxus-panel (#151821) → opaque solid for sticky cell
-    const leftBg = weekend ? "" : "bg-noxus-panel";
-    const leftStyle = weekend ? 'style="background-color:#271923"' : "";
-    const isSaturday = new Date(appState.year, appState.month0, d).getDay() === 6;
-    const weBorder = weekend ? ";border-bottom-width:2px;border-bottom-color:#4a1a26" : "";
-    const weSatTop = isSaturday ? ";border-top-width:2px;border-top-color:#4a1a26" : "";
+    const sat = new Date(appState.year, appState.month0, d).getDay() === 6;
 
     const hasN = appState.columns.some(
-      (col) => (appState.cells?.[dk]?.[col.id]?.code ?? "").trim().toUpperCase() === "N",
+      (c) => (appState.cells?.[dk]?.[c.id]?.code ?? "").trim().toUpperCase().startsWith("N"),
     );
     const hasTD = appState.columns.some(
-      (col) => (appState.cells?.[dk]?.[col.id]?.code ?? "").trim().toUpperCase() === "TD",
+      (c) => (appState.cells?.[dk]?.[c.id]?.code ?? "").trim().toUpperCase().startsWith("TD"),
     );
     const covered = hasN && hasTD;
     const manualCov = appState.manualCovered?.[dk] ?? false;
 
     let coverEl;
-    if (covered) {
-      coverEl = `<span class="w-5 text-center text-green-400 font-bold flex-shrink-0">✓</span>`;
-    } else if (manualCov) {
-      coverEl = `<button data-togglecover="${dk}" class="w-5 text-center text-green-600 font-bold flex-shrink-0 hover:text-red-400 leading-none" title="Manueller Haken – klicken zum Entfernen">✓</button>`;
+    if (covered || manualCov) {
+      coverEl = `<button data-togglecover="${dk}" class="cover ok" title="Tag gedeckt – klicken zum Entfernen des manuellen Hakens">${SVG_CHECK}</button>`;
     } else {
-      coverEl = `<button data-togglecover="${dk}" class="w-5 text-center text-noxus-steel flex-shrink-0 hover:text-green-400 leading-none text-base" title="Klicken für manuellen Haken">·</button>`;
+      coverEl = `<button data-togglecover="${dk}" class="cover dot" title="Klicken für manuellen Haken">·</button>`;
     }
 
-    body += `<tr class="${rowClass}">`;
+    const trClass = [weekend ? "weekend" : "", sat ? "sat" : ""].filter(Boolean).join(" ");
+
+    body += `<tr class="${trClass}">`;
     body += `
-      <td class="sticky left-0 z-10 ${leftBg} border-b-2 border-noxus-steel px-2 py-0.5 w-24" ${weekend ? `style="background-color:#271923${weBorder}${weSatTop}"` : ""}>
-        <div class="flex items-center gap-1.5">
+      <td class="day-cell">
+        <div class="row">
+          <span class="dnum">${pad2(d)}</span>
+          <span class="wk">${escapeHtml(wk)}</span>
           ${coverEl}
-          <div class="leading-tight">
-            <div class="text-xs font-semibold">${pad2(d)}.</div>
-            <div class="text-[10px] text-muted">${wk}</div>
-          </div>
         </div>
       </td>
     `;
 
     for (const col of appState.columns) {
       const cell = appState.cells?.[dk]?.[col.id] ?? { code: "", hours: "" };
-      const codeVal = cell.code ?? "";
-      const effCode = effectiveCode(dk, col.id);
+      const codeVal  = cell.code ?? "";
+      const effCode  = effectiveCode(dk, col.id);
       const hoursVal = (cell.hours ?? "") === 0 ? "0" : (cell.hours ?? "");
 
       if (effCode !== "" && !/^-+$/.test(effCode.trim())) sumDays[col.id] += 1;
-
       const hoursNum = Number(String(cell.hours ?? "").replace(",", "."));
       if (!Number.isNaN(hoursNum) && hoursNum > 0) sumHours[col.id] += hoursNum;
+      if (codeVal.trim().toUpperCase().startsWith("N")) sumNight[col.id] += 1;
 
-      if (codeVal.trim().toUpperCase() === "N") sumNight[col.id] += 1;
-
+      const stCls = statusClass(effCode);
       body += `
-        <td class="border-b border-l-2 border-noxus-steel px-1 py-0.5" style="${cellBgStyle(effCode)}${weBorder}${weSatTop}">
-          <div class="grid grid-cols-[1fr_auto] items-center gap-1">
-            <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/60 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
-                   value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(effCode)}" data-code="${dk}|${col.id}" />
-            <input class="w-12 h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-[10px] leading-none text-right tabular-nums focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
-                   value="${escapeHtml(String(hoursVal))}" data-hours="${dk}|${col.id}" inputmode="decimal" />
+        <td>
+          <div class="shift ${stCls}">
+            <input class="code" value="${escapeHtml(codeVal)}" placeholder="${escapeHtml(effCode || "—")}"
+                   data-code="${dk}|${col.id}" />
+            <input class="hours" value="${escapeHtml(String(hoursVal))}" placeholder="—"
+                   data-hours="${dk}|${col.id}" inputmode="decimal" />
           </div>
         </td>
       `;
@@ -138,48 +139,65 @@ export function renderPlanTable(dom) {
 
     const commentVal = appState.comments?.[dk] ?? "";
     body += `
-      <td class="border-b border-l-2 border-noxus-steel px-1 py-0.5" style="width:350px; min-width:350px;${weBorder}${weSatTop}">
-        <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/30 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
-               value="${escapeHtml(commentVal)}" data-comment="${dk}" />
+      <td>
+        <input class="cmt" value="${escapeHtml(commentVal)}" placeholder="—" data-comment="${dk}" />
       </td>
     `;
     body += `</tr>`;
   }
 
-  const footerRow = (label, cells) => `
-    <tr>
-      <th class="sticky left-0 z-10 bg-noxus-panel border-t-2 border-noxus-steel px-2 py-1 text-xs w-24">
-        <div class="flex items-center gap-1.5">
-          <span class="w-5 flex-shrink-0"></span>
-          <span>${label}</span>
-        </div>
-      </th>
-      ${cells}
+  /* ---------- tfoot — 4 schmale Zeilen: Soll, Ist, NB's, Tage ---------- */
+  const cmtCell = (key) => `
+    <td class="cmt-cell">
+      <input class="cmt" value="${escapeHtml(appState.comments?.[key] ?? "")}" data-comment="${key}" />
+    </td>
+  `;
+
+  const sollRow = `
+    <tr class="foot-row first">
+      <th class="foot-label">Soll</th>
+      ${appState.columns.map((c) => `
+        <td>
+          <input class="foot-input" value="${escapeHtml(String(c.soll ?? ""))}" placeholder="—"
+                 data-soll="${c.id}" inputmode="decimal" />
+        </td>
+      `).join("")}
+      ${cmtCell("_soll")}
     </tr>
   `;
 
-  const cell = (content) =>
-    `<td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-2 py-1 text-right font-semibold text-xs tabular-nums">${content}</td>`;
-  const commentCell = (key) => `
-    <td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-1 py-0.5" style="width:350px; min-width:350px;">
-      <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/30 px-1.5 text-xs leading-none focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
-             value="${escapeHtml(appState.comments?.[key] ?? "")}" data-comment="${key}" />
-    </td>`;
-
-  const tfoot = `
-    <tfoot>
-      ${footerRow("Soll", appState.columns.map((c) => `
-        <td class="bg-noxus-panel border-t border-l-2 border-noxus-steel px-1 py-0.5">
-          <input class="w-full h-5 rounded border border-noxus-steel bg-noxus-bg/40 px-1 text-xs text-right tabular-nums focus:outline-none focus:border-noxus-red focus:ring-1 focus:ring-noxus-red"
-                 value="${escapeHtml(String(c.soll ?? ""))}" data-soll="${c.id}" inputmode="decimal" />
-        </td>
-      `).join("") + commentCell("_soll"))}
-      ${footerRow("Ist",  appState.columns.map((c) => cell(sumHours[c.id].toFixed(2))).join("") + commentCell("_ist"))}
-      ${footerRow("NB's", appState.columns.map((c) => cell(sumNight[c.id])).join("") + commentCell("_nbs"))}
-      ${footerRow("Tage", appState.columns.map((c) => cell(sumDays[c.id])).join("") + commentCell("_tage"))}
-
-    </tfoot>
+  const istRow = `
+    <tr class="foot-row">
+      <th class="foot-label">Ist · h</th>
+      ${appState.columns.map((c) => {
+        const ist = sumHours[c.id];
+        const sollNum = Number(String(c.soll ?? "").replace(",", "."));
+        const hasSoll = !Number.isNaN(sollNum) && c.soll !== "" && c.soll != null;
+        const delta = hasSoll ? ist - sollNum : null;
+        const cls = delta == null ? "" : delta < 0 ? "delta-under" : delta > 0 ? "delta-over" : "";
+        return `<td class="num ${cls}">${ist.toFixed(2)}</td>`;
+      }).join("")}
+      ${cmtCell("_ist")}
+    </tr>
   `;
+
+  const nbRow = `
+    <tr class="foot-row">
+      <th class="foot-label">NB's</th>
+      ${appState.columns.map((c) => `<td class="num">${sumNight[c.id]}</td>`).join("")}
+      ${cmtCell("_nbs")}
+    </tr>
+  `;
+
+  const tageRow = `
+    <tr class="foot-row">
+      <th class="foot-label">Tage</th>
+      ${appState.columns.map((c) => `<td class="num">${sumDays[c.id]}</td>`).join("")}
+      ${cmtCell("_tage")}
+    </tr>
+  `;
+
+  const tfoot = `<tfoot>${sollRow}${istRow}${nbRow}${tageRow}</tfoot>`;
 
   dom.planTable.innerHTML = thead + `<tbody>${body}</tbody>` + tfoot;
 }

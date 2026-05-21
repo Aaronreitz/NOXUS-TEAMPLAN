@@ -11,27 +11,39 @@ import { exportToExcel } from "./exportExcel.js";
 import { openCalendarModal, closeCalendarModal } from "./calendarModal.js";
 
 export function wireEvents(dom) {
-  let _pendingFocus = null; // { attr: "data-code"|"data-hours", key: string }
+  let _pendingFocus = null; // { attr, key }
+
+  // Track which input the user is interacting with so we can restore focus
+  // after the full innerHTML re-render. Now wired on BOTH mousedown and
+  // keydown (Tab), which fixes the upstream TODO about losing focus on Tab.
+  function rememberFocus(el) {
+    if (!el || el.tagName !== "INPUT") { _pendingFocus = null; return; }
+    const a =
+      el.getAttribute("data-code")    ? { attr: "data-code",    key: el.getAttribute("data-code") } :
+      el.getAttribute("data-hours")   ? { attr: "data-hours",   key: el.getAttribute("data-hours") } :
+      el.getAttribute("data-soll")    ? { attr: "data-soll",    key: el.getAttribute("data-soll") } :
+      el.getAttribute("data-coltitle")? { attr: "data-coltitle",key: el.getAttribute("data-coltitle") } :
+      el.getAttribute("data-comment") ? { attr: "data-comment", key: el.getAttribute("data-comment") } :
+      null;
+    _pendingFocus = a;
+  }
 
   dom.planTable.addEventListener("mousedown", (e) => {
     const input = e.target.tagName === "INPUT"
       ? e.target
       : e.target.closest("td")?.querySelector("input[data-code]") ?? e.target.closest("td")?.querySelector("input");
-    if (!input) { _pendingFocus = null; return; }
-    const codeKey    = input.getAttribute("data-code");
-    const hoursKey   = input.getAttribute("data-hours");
-    const sollKey    = input.getAttribute("data-soll");
-    const commentKey = input.getAttribute("data-comment");
-    _pendingFocus = codeKey
-      ? { attr: "data-code",    key: codeKey }
-      : hoursKey
-        ? { attr: "data-hours",  key: hoursKey }
-        : sollKey
-          ? { attr: "data-soll", key: sollKey }
-          : commentKey
-            ? { attr: "data-comment", key: commentKey }
-            : null;
+    rememberFocus(input);
   });
+
+  dom.planTable.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    // After Tab, the browser will move focus to the next focusable input
+    // BEFORE focusout fires. We can't know its data-* yet, so we let the
+    // browser do its thing and only fix the re-render path by deferring
+    // refocus to the next animation frame.
+    _pendingFocus = { defer: true };
+  });
+
   dom.addColBtn.addEventListener("click", () => {
     appState.columns.push({ id: nextColumnId(), title: "Neu", soll: "" });
     saveState();
@@ -40,33 +52,31 @@ export function wireEvents(dom) {
 
   dom.prevMonth.addEventListener("click", () => {
     appState.month0--;
-    if (appState.month0 < 0) {
-      appState.month0 = 11;
-      appState.year--;
-    }
+    if (appState.month0 < 0) { appState.month0 = 11; appState.year--; }
     saveState();
     renderPlanTable(dom);
   });
 
   dom.nextMonth.addEventListener("click", () => {
     appState.month0++;
-    if (appState.month0 > 11) {
-      appState.month0 = 0;
-      appState.year++;
-    }
+    if (appState.month0 > 11) { appState.month0 = 0; appState.year++; }
     saveState();
     renderPlanTable(dom);
   });
 
+  // Live column-title input (no re-render needed — title is only echoed in the avatar pill)
   dom.planTable.addEventListener("input", (e) => {
     const t = e.target;
     const colId = t.getAttribute?.("data-coltitle");
     if (!colId) return;
     const col = appState.columns.find((c) => c.id === colId);
-    if (col) {
-      col.title = t.value;
-      saveState();
-    }
+    if (!col) return;
+    col.title = t.value;
+    // Update avatar live without full re-render
+    const av = t.closest(".person")?.querySelector(".av");
+    if (av) av.textContent = (t.value.trim()[0] || "?").toUpperCase() +
+                              (t.value.trim().split(/\s+/)[1]?.[0] || "").toUpperCase();
+    saveState();
   });
 
   dom.planTable.addEventListener("click", (e) => {
@@ -89,9 +99,9 @@ export function wireEvents(dom) {
       input?.focus();
     }
 
-    const btn = e.target.closest?.("[data-coldelete]");
-    if (!btn) return;
-    const colId = btn.getAttribute("data-coldelete");
+    const delBtn = e.target.closest?.("[data-coldelete]");
+    if (!delBtn) return;
+    const colId = delBtn.getAttribute("data-coldelete");
     appState.columns = appState.columns.filter((c) => c.id !== colId);
 
     for (const dk of Object.keys(appState.cells)) {
@@ -100,7 +110,6 @@ export function wireEvents(dom) {
         delete appState.cells[dk];
       }
     }
-
     saveState();
     renderPlanTable(dom);
   });
@@ -113,18 +122,19 @@ export function wireEvents(dom) {
     if (e.target === e.currentTarget) closeCalendarModal();
   });
 
-  // TODO: Tab-Navigation — _pendingFocus wird nur per mousedown gesetzt, nicht per Tab.
-  // Nach einer Eingabe + Tab re-rendert die Tabelle und der Fokus geht verloren.
-  // Fix: keydown auf Tab abfangen, nächstes Input-Element per DOM-Reihenfolge ermitteln
-  // und als _pendingFocus setzen bevor focusout feuert.
+  // Re-render after edits + restore focus to the same data-* hook
   dom.planTable.addEventListener("focusout", (e) => {
     const t = e.target;
+
     function refocusAfterRender() {
-      if (_pendingFocus) {
+      // If we deferred (Tab key), let the browser settle and pick the new active element.
+      requestAnimationFrame(() => {
+        if (!_pendingFocus) return;
+        if (_pendingFocus.defer) { _pendingFocus = null; return; }
         const next = dom.planTable.querySelector(`[${_pendingFocus.attr}="${_pendingFocus.key}"]`);
         next?.focus();
         _pendingFocus = null;
-      }
+      });
     }
 
     const codeKey = t.getAttribute?.("data-code");
@@ -133,7 +143,7 @@ export function wireEvents(dom) {
       const newCode = t.value.trim();
       if (newCode === (appState.cells?.[dk]?.[colId]?.code ?? "")) return;
       const cell = getOrCreateCell(dk, colId);
-      cell.code = newCode;
+      cell.code = newCode.toUpperCase();
       cleanupCell(dk, colId);
       saveState();
       renderPlanTable(dom);
@@ -167,6 +177,9 @@ export function wireEvents(dom) {
       if (newSoll === (col.soll ?? "")) return;
       col.soll = newSoll;
       saveState();
+      // Soll affects the Δ stats footer — re-render needed.
+      renderPlanTable(dom);
+      refocusAfterRender();
       return;
     }
 

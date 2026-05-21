@@ -3,93 +3,320 @@
 
 @config "../tailwind.config.mjs";
 
-/* =========================
-   Components (Bootstrap-like)
-   ========================= */
+/* ============================================================
+   Webfonts — JetBrains Mono Nerd Font (Mono, Ligatures)
+   ============================================================ */
+@font-face {
+  font-family: "JetBrains Mono NF";
+  font-weight: 400; font-style: normal; font-display: swap;
+  src: url("../fonts/JetBrainsMonoNerdFontMono-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "JetBrains Mono NF";
+  font-weight: 700; font-style: normal; font-display: swap;
+  src: url("../fonts/JetBrainsMonoNerdFontMono-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "JetBrains Mono NF";
+  font-weight: 400; font-style: italic; font-display: swap;
+  src: url("../fonts/JetBrainsMonoNerdFontMono-Italic.ttf") format("truetype");
+}
+
+/* ============================================================
+   Base — body, scrollbar, focus
+   ============================================================ */
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: #0f1115; }
+::-webkit-scrollbar-thumb  { background: #2a2f3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8b1d2c; }
+
+/* ============================================================
+   Components
+   ============================================================ */
 @layer components {
-  /* Layout / Grid */
-  .container {
-    @apply max-w-7xl mx-auto px-6;
+  /* ---------- Top bar ---------- */
+  .topbar {
+    @apply relative z-40 h-[60px] flex items-center gap-6 px-7 flex-shrink-0;
+    @apply border-b border-noxus-hairline;
+    background: linear-gradient(180deg, #11131a 0%, rgba(15,17,21,0.92) 100%);
+    backdrop-filter: saturate(140%);
+  }
+  .topbar::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #8b1d2c 20%, #8b1d2c 80%, transparent 100%);
+    opacity: 0.55;
+  }
+  .brand        { @apply flex items-center gap-3; }
+  .brand img    { @apply w-8 h-8; image-rendering: -webkit-optimize-contrast; }
+  .brand-wrap   { @apply flex flex-col gap-1; }
+  .brand-wm     { @apply font-bold text-[18px] text-noxus-ink leading-none; letter-spacing: 0.14em; }
+  .brand-wm b   { @apply text-noxus-red; }
+  .brand-sub    { @apply font-mono text-[10px] text-noxus-ash uppercase leading-none; letter-spacing: 0.16em; }
+  .topbar-spacer{ @apply flex-1; }
+
+  /* Pill month-nav */
+  .pill {
+    @apply inline-flex items-center bg-noxus-pill border border-noxus-hairline rounded-full p-[3px] h-[38px];
+  }
+  .pill .nav-btn {
+    @apply w-8 h-8 rounded-full inline-flex items-center justify-center bg-transparent border-0 text-noxus-text cursor-pointer;
+    transition: background-color 80ms ease, color 80ms ease;
+  }
+  .pill .nav-btn:hover { @apply bg-noxus-pill-hi text-white; }
+  .pill .nav-btn svg   { width: 14px; height: 14px; }
+  .pill .month-label {
+    @apply font-mono text-[13px] text-noxus-ink px-4 min-w-[180px] text-center;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
   }
 
-  .row {
-    @apply flex flex-wrap -mx-3;
+  /* Top-bar action buttons */
+  .tbtn {
+    @apply inline-flex items-center gap-2 h-[38px] px-3.5 rounded-lg border border-noxus-hairline bg-transparent text-noxus-text text-[13px] cursor-pointer;
+    transition: background-color 80ms ease, border-color 80ms ease, transform 80ms ease;
+  }
+  .tbtn:hover  { @apply bg-noxus-pill; border-color: #343a4d; }
+  .tbtn:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.45); background-color: #0f1115; }
+  .tbtn.primary { @apply bg-noxus-red border-noxus-red text-white; }
+  .tbtn.primary:hover  { background-color: #7a1626; border-color: #7a1626; }
+  .tbtn.primary:active { background-color: #5d121e; border-color: #5d121e; box-shadow: inset 0 2px 4px rgba(0,0,0,0.55); }
+  .tbtn svg { width: 14px; height: 14px; }
+
+  /* ---------- Shell + Panel ---------- */
+  .shell  {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 max(28px, calc((100vw - 1480px) / 2)) 56px;
+  }
+  .panel  {
+    background-color: #151821;
+    border: 1px solid #232735;
+    border-radius: 14px;
+    overflow: clip;
+    margin-top: 28px;
+    box-shadow: 0 30px 60px -28px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.02);
   }
 
-  .col {
-    @apply px-3 w-full;
+  /* ---------- Plan table ---------- */
+  .plan       { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  .plan thead th {
+    position: sticky;
+    top: -2px;
+    z-index: 5;
+    background-color: #151821;
+    border-bottom: 1px solid #232735;
+    padding: 14px 10px;
+    text-align: left;
+    vertical-align: middle;
+    font-weight: 500;
+  }
+  .plan thead th + th { border-left: 1px solid #1c2030; }
+  .plan thead th.day-th {
+    @apply left-0 z-[6] border-r border-noxus-hairline font-mono text-[10px] text-noxus-ash uppercase;
+    width: 96px; letter-spacing: 0.18em;
+  }
+  .plan thead th.comment-th {
+    @apply font-mono text-[10px] text-noxus-ash uppercase pl-3.5;
+    width: 320px; min-width: 320px; letter-spacing: 0.18em;
   }
 
-  /* Spalten */
-  .col-4 {
-    @apply w-1/3;
+  .person       { @apply flex items-center gap-2; min-width: 150px; }
+  .person .who  { @apply flex flex-col gap-0.5 min-w-0 w-full; }
+  .person .name {
+    @apply bg-transparent border border-noxus-hairline text-noxus-ink font-semibold text-[13px] outline-none w-full rounded-md;
+    height: 28px; padding: 0 8px;
+    transition: border-color 80ms;
   }
-  .col-6 {
-    @apply w-1/2;
+  .person .name:hover, .person .name:focus { border-color: #353a4a; background: rgba(255,255,255,0.02); }
+  .person .budget {
+    @apply inline-flex items-center gap-1.5 font-mono text-[11px] text-noxus-ash;
+    font-variant-numeric: tabular-nums;
   }
-  .col-8 {
-    @apply w-2/3;
+  .person .budget input {
+    @apply bg-transparent border-0 outline-none p-0 w-14 text-noxus-ash font-mono;
+    font-variant-numeric: tabular-nums;
   }
-  .col-12 {
-    @apply w-full;
+  .person .budget input:focus { @apply text-noxus-ink; }
+  .person .meta { @apply ml-auto flex gap-1 flex-shrink-0; }
+  .person .meta button {
+    @apply w-[30px] h-[30px] rounded-lg bg-transparent border border-transparent text-noxus-ash cursor-pointer inline-flex items-center justify-center;
+    transition: background-color 80ms, color 80ms, border-color 80ms;
   }
+  .person .meta button:hover         { @apply bg-noxus-pill text-noxus-text border-noxus-hairline; }
+  .person .meta button.danger:hover  { color: #8b1d2c; border-color: rgba(139,29,44,0.4); }
+  .person .meta svg { width: 14px; height: 14px; }
 
-  /* Cards / Panels */
-  .card {
-    @apply bg-noxus-panel border border-noxus-steel rounded-xl shadow-lg;
-  }
+  /* Body cells */
+  .plan tbody td { padding: 0 6px; height: 38px; border-bottom: 1px solid #1a1d27; }
+  .plan tbody td + td { border-left: 1px solid #1c2030; }
+  .plan tbody tr:hover td { background-color: rgba(255,255,255,0.015); }
 
-  .card-header {
-    @apply px-6 py-4 border-b border-noxus-steel font-semibold text-lg;
+  .plan tbody td.day-cell {
+    @apply sticky left-0 z-[1] bg-noxus-panel border-r border-noxus-hairline;
+    width: 96px; padding: 0 14px; box-sizing: border-box;
   }
-
-  .card-body {
-    @apply px-6 py-4;
+  .day-cell .row { @apply flex items-baseline gap-2; }
+  .day-cell .dnum {
+    @apply font-mono font-medium text-[16px] text-noxus-ink;
+    font-variant-numeric: tabular-nums; min-width: 26px;
   }
+  .day-cell .wk    { @apply text-[10px] text-noxus-ash uppercase; letter-spacing: 0.16em; }
+  .day-cell .cover {
+    @apply w-[18px] h-[18px] rounded-full inline-flex items-center justify-center ml-auto cursor-pointer;
+    @apply bg-transparent border border-transparent text-noxus-ash font-mono text-[10px] leading-none;
+    outline: none; padding: 0; appearance: none; -webkit-appearance: none;
+  }
+  .day-cell .cover.ok      { color: #4ade80; border-color: rgba(74,222,128,0.35); }
+  .day-cell .cover.ok:hover { border-color: rgba(74,222,128,0.6); }
+  .day-cell .cover.dot:hover { color: #4ade80; border-color: rgba(74,222,128,0.3); }
 
-  .card-footer {
-    @apply px-6 py-3 border-t border-noxus-steel text-right;
+  /* Weekend = 3px red bar on the day-cell left + faint tint on the row */
+  .plan tbody tr.weekend td.day-cell { box-shadow: inset 3px 0 0 #8b1d2c; }
+  .plan tbody tr.weekend td.day-cell .wk { color: #e88aa6; }
+  .plan tbody tr.weekend td { background-color: rgba(139, 29, 44, 0.045); }
+  .plan tbody tr.sat td    { border-top: 1px solid #2a1620; }
+
+  /* Shift cell — chip-style code + light mono hours */
+  .shift {
+    @apply inline-flex items-center gap-2 h-[30px] px-1;
+  }
+  .shift .code {
+    @apply font-mono font-bold text-[12px] uppercase bg-transparent border border-noxus-hairline text-noxus-text rounded-md outline-none;
+    width: 56px; height: 26px; padding: 0 8px; letter-spacing: 0.06em;
+    transition: border-color 80ms, background-color 80ms;
+  }
+  .shift .code:hover, .shift .code:focus { border-color: #353a4a; }
+  .shift .code::placeholder { @apply text-noxus-ash uppercase font-bold; opacity: 0.45; }
+  .shift .hours {
+    @apply font-mono text-[12px] bg-transparent border-0 text-noxus-ash text-right outline-none;
+    width: 38px; font-variant-numeric: tabular-nums;
+  }
+  .shift .hours:focus { @apply text-noxus-ink; }
+  .shift .hours::placeholder { color: #2a2f3a; opacity: 0.5; }
+
+  /* Status fills (apply to .shift, not the td) */
+  .shift.s-n  .code { border-color: rgba(158,193,255,0.45); background: rgba(26,45,80,0.55);  color: #c8dcff; }
+  .shift.s-td .code { border-color: rgba(127,211,164,0.45); background: rgba(20,45,37,0.55);  color: #b6ebca; }
+  .shift.s-x  .code { border-color: rgba(142,162,216,0.35); background: rgba(24,31,56,0.55);  color: #c0cbe8; }
+  .shift.s-u  .code { border-color: rgba(230,180,106,0.45); background: rgba(51,40,21,0.55);  color: #f0c989; }
+  .shift.s-kr .code { border-color: rgba(232,138,166,0.45); background: rgba(46,21,32,0.55);  color: #f3aec1; }
+
+  /* Comment cell */
+  .cmt {
+    @apply bg-transparent border-0 text-noxus-text outline-none w-full rounded-md;
+    height: 30px; padding: 0 6px; font-size: 12.5px;
+    transition: background-color 80ms;
+  }
+  .cmt:focus, .cmt:hover { background-color: rgba(255,255,255,0.025); }
+  .cmt::placeholder      { color: #2a2f3a; }
+
+  /* 4-row footer: Soll / Ist / NB's / Tage */
+  .plan tfoot tr.foot-row td,
+  .plan tfoot tr.foot-row th { border-top: 1px solid #232735; height: 32px; }
+  .plan tfoot tr.foot-row td + td,
+  .plan tfoot tr.foot-row th + td { border-left: 1px solid #1c2030; }
+  .plan tfoot tr.foot-row td {
+    padding: 0 10px;
+    font-family: "JetBrains Mono NF", monospace;
+    font-size: 12.5px; text-align: right;
+    color: #f4f4f6;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan tfoot tr.foot-row td.num { font-weight: 500; }
+  .plan tfoot tr.foot-row td.num.delta-under { color: #e6b46a; }
+  .plan tfoot tr.foot-row td.num.delta-over  { color: #7fd3a4; }
+  .plan tfoot tr.foot-row th.foot-label {
+    position: sticky; left: 0;
+    background: #151821;
+    border-right: 1px solid #232735;
+    width: 96px; padding: 0 14px;
+    font-family: "JetBrains Mono NF", monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    color: #8b8f99; text-transform: uppercase;
+    text-align: left;
+  }
+  .plan tfoot tr.foot-row td input.foot-input {
+    background: transparent; border: 0; outline: none;
+    width: 100%; height: 100%;
+    font-family: "JetBrains Mono NF", monospace;
+    font-size: 12.5px; text-align: right;
+    color: #f4f4f6;
+    font-variant-numeric: tabular-nums;
+  }
+  .plan tfoot tr.foot-row td input.foot-input:focus { color: #fff; }
+  .plan tfoot tr.foot-row td input.foot-input::placeholder { color: #2a2f3a; }
+  .plan tfoot tr.foot-row.first td,
+  .plan tfoot tr.foot-row.first th {
+    background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
+  }
+  .plan tfoot tr.foot-row.first th.foot-label {
+    background: linear-gradient(180deg, rgba(21,24,33,0.99) 0%, #151821 100%);
+  }
+  .plan tfoot tr.foot-row td.cmt-cell { padding: 0 6px; text-align: left; }
+
+  /* Legend strip below the panel */
+  .legend       { @apply flex items-center gap-4 flex-wrap mt-3.5 px-1 text-[11.5px] text-noxus-ash; }
+  .legend .item { @apply inline-flex items-center gap-2; }
+  .legend .sw   {
+    @apply inline-flex items-center justify-center font-mono font-bold text-[10px] rounded;
+    width: 30px; height: 18px;
+  }
+  .legend .sw.s-n  { background: rgba(26,45,80,0.55); border:1px solid rgba(158,193,255,0.45); color:#c8dcff; }
+  .legend .sw.s-td { background: rgba(20,45,37,0.55); border:1px solid rgba(127,211,164,0.45); color:#b6ebca; }
+  .legend .sw.s-u  { background: rgba(51,40,21,0.55); border:1px solid rgba(230,180,106,0.45); color:#f0c989; }
+  .legend .sw.s-kr { background: rgba(46,21,32,0.55); border:1px solid rgba(232,138,166,0.45); color:#f3aec1; }
+  .legend .sw.s-x  { background: rgba(24,31,56,0.55); border:1px solid rgba(142,162,216,0.35); color:#c0cbe8; }
+
+  /* Calendar modal — same vibe, refined edges */
+  .modal-back {
+    @apply fixed inset-0 z-50 flex items-center justify-center;
+    background: rgba(0,0,0,0.75);
+  }
+  .modal {
+    @apply bg-noxus-panel border border-noxus-hairline rounded-[14px];
+    width: 460px; max-width: 95vw; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+  }
+  .modal-head {
+    @apply flex items-center justify-between px-5 py-4 border-b border-noxus-hairline font-mono text-[13px];
+    letter-spacing: 0.04em;
+  }
+  .modal-body { @apply p-4; }
+  .cal-wd-row { @apply grid grid-cols-7 gap-1 mb-1; }
+  .cal-wd     { @apply text-center text-[11px] text-noxus-ash font-semibold; }
+  .cal-grid   { @apply grid grid-cols-7 gap-1; }
+  .cal-cell   {
+    @apply flex flex-col justify-between p-1.5 rounded-[7px] border border-noxus-steel;
+    height: 56px; background: #1a1f2e;
+  }
+  .cal-cell.we  { background: #1e1215; border-color: #3a1a22; }
+  .cal-cell.off { background: #12141c; border: 1px dashed #1a1d27; opacity: 0.5; }
+  .cal-cell.off.we { background: #110d0f; border-color: #1e151a; }
+  .cal-cell .d  { @apply font-mono text-[10px] font-semibold text-noxus-ash; }
+  .cal-cell.we .d { color: #e88aa6; }
+  .cal-cell .v  { @apply text-center font-mono text-[12px] font-bold leading-none; }
+  .cal-cell .h  { @apply text-center text-[9px] text-noxus-ash mt-0.5; }
+  .cal-cell.s-n  { background: #1a2d50; border-color: #1a2d50; }
+  .cal-cell.s-td { background: #142d25; border-color: #142d25; }
+  .cal-cell.s-x  { background: #181f38; border-color: #181f38; }
+  .cal-cell.s-u  { background: #332815; border-color: #332815; }
+  .cal-cell.s-kr { background: #2e1520; border-color: #2e1520; }
+
+  /* Print: only the calendar modal, headless */
+  @media print {
+    body > *:not(.modal-back) { display: none !important; }
+    .modal-back { position: static !important; background: transparent !important; }
+    .modal-back button { display: none !important; }
   }
 }
 
-/* =========================
-   Button Lift Effect
-   ========================= */
-.card-header button {
-  transition: transform 80ms ease, box-shadow 80ms ease;
-}
-.card-header button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-.card-header button:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
-
-/* =========================
-   Scrollbar
-   ========================= */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0f1115;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2f3a;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #8b1d2c;
-}
-
-/* =========================
-   Utilities
-   ========================= */
 @layer utilities {
-  .text-muted {
-    @apply text-noxus-ash;
-  }
+  .text-muted { @apply text-noxus-ash; }
 }

@@ -7,98 +7,73 @@
   </head>
 
   <body class="bg-noxus-bg text-noxus-text min-h-screen">
-    <header class="border-b border-noxus-steel">
-      <div class="container py-6">
-        <h1 class="text-3xl font-bold">Noxus-Teamplan</h1>
+
+    <!-- Modern top bar: brand + pill month nav + actions -->
+    <header class="topbar">
+      <div class="brand">
+        <img src="assets/noxus-icon-256.png" alt="Noxus" />
+        <div class="brand-wrap">
+          <div class="brand-wm">NOX<b>U</b>S</div>
+          <div class="brand-sub">Teamplan</div>
+        </div>
       </div>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="pill" role="group" aria-label="Monatsnavigation">
+        <button id="prevMonth" class="nav-btn" aria-label="Vorheriger Monat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        </button>
+        <span id="monthTitle" class="month-label">–</span>
+        <button id="nextMonth" class="nav-btn" aria-label="Nächster Monat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <button id="exportExcelBtn" class="tbtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Excel</span>
+      </button>
+      <button id="addColBtn" class="tbtn primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Person</span>
+      </button>
     </header>
 
-    <main class="container mt-8">
-      <div class="row gap-y-6">
-        <section class="col col-12">
-          <div class="flex justify-center">
-            <div class="w-full max-w-[1600px]">
-              <!-- Card: Plan -->
-              <div class="card">
-                <div class="card-header flex items-center justify-between">
-                  <div>
-                    <div class="text-muted text-sm">Monatsplan</div>
-                    <div id="monthTitle" class="text-xl font-bold">–</div>
-                  </div>
+    <!-- Main panel + plan table + legend -->
+    <main class="shell">
+      <div class="panel">
+        <table id="planTable" class="plan"></table>
+      </div>
 
-                  <div class="flex items-center gap-2">
-                    <button
-                      id="exportExcelBtn"
-                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
-                    >
-                      Excel Export
-                    </button>
-
-                    <button
-                      id="prevMonth"
-                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
-                    >
-                      <span style="font-size:1.4rem;line-height:0">‹</span>
-                    </button>
-
-                    <button
-                      id="nextMonth"
-                      class="px-3 py-2 rounded-md border border-noxus-steel hover:bg-noxus-panel"
-                    >
-                      <span style="font-size:1.4rem;line-height:0">›</span>
-                    </button>
-
-                    <button
-                      id="addColBtn"
-                      class="px-3 py-2 rounded-md bg-noxus-red text-white hover:bg-red-800"
-                    >
-                      + Spalte
-                    </button>
-                  </div>
-                </div>
-
-                <div class="card-body space-y-4">
-                  <div
-                    class="overflow-auto rounded-lg border border-noxus-steel"
-                  >
-                    <table
-                      id="planTable"
-                      class="min-w-[700px] w-full text-sm"
-                    ></table>
-                  </div>
-                </div>
-              </div>
-              <!-- /Card -->
-            </div>
-          </div>
-        </section>
+      <div class="legend">
+        <span class="item"><span class="sw s-n">N</span> Nachtbereitschaft</span>
+        <span class="item"><span class="sw s-td">TD</span> Tagdienst</span>
+        <span class="item"><span class="sw s-x">X</span> Folgetag nach N</span>
+        <span class="item"><span class="sw s-u">U</span> Urlaub</span>
+        <span class="item"><span class="sw s-kr">KR</span> Krank</span>
+        <span style="margin-left:auto; font-family:'JetBrains Mono NF', monospace; font-size:11px; display:inline-flex; align-items:center; gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+          öffnet die Kalenderansicht je Person
+        </span>
       </div>
     </main>
+
     <!-- Kalender-Modal -->
-    <div id="calendarModal" class="fixed inset-0 z-50 items-center justify-center" style="display:none;background:rgba(0,0,0,0.75)">
-      <div class="bg-noxus-panel border border-noxus-steel rounded-xl shadow-2xl" style="width:440px;max-width:95vw">
-        <div class="flex items-center justify-between px-5 py-3 border-b border-noxus-steel">
-          <span id="calModalTitle" class="font-bold text-base"></span>
+    <div id="calendarModal" class="modal-back" style="display:none">
+      <div class="modal">
+        <div class="modal-head">
+          <span id="calModalTitle"></span>
           <div class="flex gap-2">
-            <button id="calModalPrint" class="px-3 py-1 text-xs rounded border border-noxus-steel hover:bg-noxus-steel">Drucken</button>
-            <button id="calModalClose" class="px-3 py-1 text-xs rounded border border-noxus-steel hover:bg-noxus-steel">✕</button>
+            <button id="calModalPrint" class="tbtn" style="height:30px;font-size:12px;padding:0 10px">Drucken</button>
+            <button id="calModalClose" class="tbtn" style="height:30px;font-size:12px;padding:0 10px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
           </div>
         </div>
-        <div id="calModalGrid" class="p-4"></div>
+        <div id="calModalGrid" class="modal-body"></div>
       </div>
     </div>
-
-    <style>
-      @media print {
-        body > *:not(#calendarModal) { display: none !important; }
-        #calendarModal {
-          display: block !important;
-          position: static !important;
-          background: transparent !important;
-        }
-        #calModalPrint, #calModalClose { display: none !important; }
-      }
-    </style>
 
     <script src="src/lib/xlsx.bundle.js"></script>
     <script type="module" src="src/js/main.js"></script>

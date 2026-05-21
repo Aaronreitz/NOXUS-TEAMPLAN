@@ -1,3 +1,5 @@
+import { dateKey } from "./dateUtils.js";
+
 const _now = new Date();
 
 function _loadState() {
@@ -59,16 +61,17 @@ export function cleanupCell(dateKeyStr, colId) {
   }
 }
 
-// TODO (code smell): pad2 / dateKey aus dateUtils.js importieren statt hier zu duplizieren.
-// Aktuell wird die Datumslogik manuell nachgebaut — bei einer Änderung an dateUtils bricht das still.
+/* effectiveCode: if a cell is empty and the previous day stored "N",
+   show "X" as a visual placeholder (not persisted). Uses dateKey from
+   dateUtils so the date format stays in sync. */
 export function effectiveCode(dk, colId) {
   const stored = appState.cells?.[dk]?.[colId]?.code ?? "";
   if (stored !== "") return stored;
   const [y, m, d] = dk.split("-").map(Number);
   const prev = new Date(y, m - 1, d - 1);
-  const prevDk = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+  const prevDk = dateKey(prev.getFullYear(), prev.getMonth(), prev.getDate());
   const prevCode = appState.cells?.[prevDk]?.[colId]?.code ?? "";
-  return prevCode.trim().toUpperCase() === "N" ? "X" : "";
+  return prevCode.trim().toUpperCase().startsWith("N") ? "X" : "";
 }
 
 export function toggleManualCovered(dk) {
