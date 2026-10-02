@@ -1,15 +1,6 @@
-import { appState, effectiveCode } from "./state.js";
+import { appState, effectiveCode, statusClass } from "./state.js";
+import { escapeHtml } from "./tableRender.js";
 import { daysInMonth, monthTitle, dateKey } from "./dateUtils.js";
-
-function statusClass(code) {
-  const c = String(code || "").trim().toUpperCase();
-  if (c.startsWith("KR")) return "s-kr";
-  if (c.startsWith("TD")) return "s-td";
-  if (c.startsWith("N"))  return "s-n";
-  if (c.startsWith("X"))  return "s-x";
-  if (c.startsWith("U"))  return "s-u";
-  return "";
-}
 
 export function openCalendarModal(colId) {
   const col = appState.columns.find((c) => c.id === colId);
@@ -42,8 +33,8 @@ export function openCalendarModal(colId) {
       <div class="cal-cell ${isWe ? "we" : ""} ${sc}">
         <div class="d">${day}</div>
         <div>
-          <div class="v">${display || ""}</div>
-          ${hours !== "" ? `<div class="h">${hours}h</div>` : ""}
+          <div class="v">${escapeHtml(display)}</div>
+          ${hours !== "" ? `<div class="h">${escapeHtml(hours)}h</div>` : ""}
         </div>
       </div>`;
   }

@@ -1,4 +1,4 @@
-import { appState, effectiveCode } from "./state.js";
+import { appState, effectiveCode, computeColumnSums, getSoll } from "./state.js";
 import {
   pad2,
   dateKey,
@@ -21,9 +21,7 @@ export function exportToExcel() {
   const excelRows = [];
   excelRows.push(["Tag", ...appState.columns.map((c) => c.title), "Kommentar"]);
 
-  const sumHoursByColumn = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
-  const sumDaysByColumn  = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
-  const sumNightByColumn = Object.fromEntries(appState.columns.map((c) => [c.id, 0]));
+  const sums = computeColumnSums(appState.year, appState.month0);
 
   for (let day = 1; day <= days; day++) {
     const dk = dateKey(appState.year, appState.month0, day);
@@ -31,21 +29,7 @@ export function exportToExcel() {
     const row = [`${pad2(day)}. ${weekday}`];
 
     for (const column of appState.columns) {
-      const cell = appState.cells?.[dk]?.[column.id];
-      const code = effectiveCode(dk, column.id).trim();
-
-      if (code !== "" && !/^-+$/.test(code)) sumDaysByColumn[column.id] += 1;
-
-      if (cell) {
-        const hoursNumber = Number(String(cell.hours ?? "").replace(",", "."));
-        if (!Number.isNaN(hoursNumber) && hoursNumber > 0) {
-          sumHoursByColumn[column.id] += hoursNumber;
-        }
-      }
-
-      if (code.toUpperCase() === "N") sumNightByColumn[column.id] += 1;
-
-      row.push(code);
+      row.push(effectiveCode(dk, column.id).trim());
     }
 
     row.push(appState.comments?.[dk] ?? ""); // Kommentar
@@ -57,26 +41,23 @@ export function exportToExcel() {
   // Reihenfolge: Soll, Ist, RB's, NB's, Tage
   excelRows.push([
     "Soll",
-    ...appState.columns.map((c) => {
-      const n = Number(String(c.soll ?? "").replace(",", "."));
-      return Number.isNaN(n) || c.soll == null || c.soll === "" ? "" : n;
-    }),
+    ...appState.columns.map((c) => getSoll(c.id)),
     "",
   ]);
   excelRows.push([
     "Ist",
-    ...appState.columns.map((c) => Number(sumHoursByColumn[c.id].toFixed(2))),
+    ...appState.columns.map((c) => Number(sums[c.id].hours.toFixed(2))),
     "",
   ]);
   excelRows.push(["RB's", ...appState.columns.map(() => ""), ""]);
   excelRows.push([
     "NB's",
-    ...appState.columns.map((c) => sumNightByColumn[c.id]),
+    ...appState.columns.map((c) => sums[c.id].nights),
     "",
   ]);
   excelRows.push([
     "Tage",
-    ...appState.columns.map((c) => sumDaysByColumn[c.id]),
+    ...appState.columns.map((c) => sums[c.id].days),
     "",
   ]);
 
@@ -155,11 +136,11 @@ export function exportToExcel() {
         cell.s.fill = weekendFill;
       }
 
-      const rawText = excelRows[r]?.[c];
-      if (
-        typeof rawText === "string" &&
-        rawText.trim().toUpperCase().startsWith("R")
-      ) {
+      // Highlight on-call (R…) shifts — only in person columns (not the
+      // comment column) and not RT, which is a Regenerationstag.
+      const isPersonCol = c >= 1 && c <= appState.columns.length;
+      const code = String(excelRows[r]?.[c] ?? "").trim().toUpperCase();
+      if (isPersonCol && code.startsWith("R") && !code.startsWith("RT")) {
         cell.s.fill = onCallFill;
       }
     }

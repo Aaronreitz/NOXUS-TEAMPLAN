@@ -1,5 +1,6 @@
 export const pad2 = (n) => String(n).padStart(2, "0");
 export const dateKey = (y, m0, d) => `${y}-${pad2(m0 + 1)}-${pad2(d)}`;
+export const monthKey = (y, m0) => `${y}-${pad2(m0 + 1)}`;
 
 export function monthTitle(y, m0) {
   return new Date(y, m0, 1).toLocaleDateString("de-DE", {

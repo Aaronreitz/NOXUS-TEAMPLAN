@@ -1,6 +1,6 @@
 {
   "name": "noxus-teamplan",
-  "version": "1.2.0-modern",
+  "version": "1.2.1",
   "description": "Noxus Teamplan – monatliche Schichtplanung als Desktop-App (modern UI)",
   "main": "electron/main.js",
   "author": "Aaron Reitz",

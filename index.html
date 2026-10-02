@@ -30,6 +30,15 @@
         </button>
       </div>
 
+      <button id="backupBtn" class="tbtn" title="Alle Daten als JSON-Datei sichern">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Sichern</span>
+      </button>
+      <button id="restoreBtn" class="tbtn" title="Sicherung laden – ersetzt alle aktuellen Daten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Laden</span>
+      </button>
+      <input id="restoreInput" type="file" accept=".json,application/json" hidden />
       <button id="exportExcelBtn" class="tbtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span>Excel</span>
@@ -40,24 +49,27 @@
       </button>
     </header>
 
-    <!-- Main panel + plan table + legend -->
+    <!-- Main panel + plan table -->
     <main class="shell">
       <div class="panel">
         <table id="planTable" class="plan"></table>
       </div>
-
-      <div class="legend">
-        <span class="item"><span class="sw s-n">N</span> Nachtbereitschaft</span>
-        <span class="item"><span class="sw s-td">TD</span> Tagdienst</span>
-        <span class="item"><span class="sw s-x">X</span> Folgetag nach N</span>
-        <span class="item"><span class="sw s-u">U</span> Urlaub</span>
-        <span class="item"><span class="sw s-kr">KR</span> Krank</span>
-        <span style="margin-left:auto; font-family:'JetBrains Mono NF', monospace; font-size:11px; display:inline-flex; align-items:center; gap:8px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
-          öffnet die Kalenderansicht je Person
-        </span>
-      </div>
     </main>
+
+    <!-- Legend lives outside .shell so it never scrolls away with the table -->
+    <footer class="legend">
+      <span class="item"><span class="sw s-n">N</span> Nachtbereitschaft</span>
+      <span class="item"><span class="sw s-td">TD</span> Tagdienst</span>
+      <span class="item"><span class="sw s-x">X</span> Folgetag nach N</span>
+      <span class="item"><span class="sw s-u">U</span><span class="sw s-u">RT</span> Urlaub / Regenerationstag</span>
+      <span class="item"><span class="sw s-kr">KR</span> Krank</span>
+      <span class="item"><span class="sw s-tb">TB</span><span class="sw s-tb">SV</span> Teambesprechung / Supervision</span>
+      <span class="item"><span class="sw s-fobi">FOBI</span> Fortbildung</span>
+      <span style="margin-left:auto; font-family:'JetBrains Mono NF', monospace; font-size:11px; display:inline-flex; align-items:center; gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+        öffnet die Kalenderansicht je Person
+      </span>
+    </footer>
 
     <!-- Kalender-Modal -->
     <div id="calendarModal" class="modal-back" style="display:none">

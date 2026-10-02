@@ -28,7 +28,9 @@ src/js/main.js
   ├── tableRender.js   — full innerHTML re-render on every state change; rebuilds thead/tbody/tfoot
   ├── calendarModal.js — read-only per-column calendar overlay (⊞ button); supports browser print
   ├── exportExcel.js   — builds XLSX via global XLSX (SheetJS); styles cells directly
-  └── dateUtils.js     — pure date helpers (pad2, dateKey, daysInMonth, weekdayShort, isWeekend, monthTitle)
+  ├── history.js       — undo/redo snapshots
+  ├── backup.js        — debounced automatic backup via preload bridge
+  └── dateUtils.js     — pure date helpers (pad2, dateKey, monthKey, daysInMonth, weekdayShort, isWeekend, monthTitle)
 ```
 
 **State shape (`appState`):**
@@ -36,8 +38,9 @@ src/js/main.js
 {
   year: number,
   month0: number,           // 0-based month
-  columns: [{ id, title, soll }],
+  columns: [{ id, title }],
   cells: { "YYYY-MM-DD": { colId: { code, hours } } },
+  soll: { "YYYY-MM": { colId: number } },  // per month, new months start empty
   comments: { "YYYY-MM-DD": string, "_soll"|"_ist"|"_nbs"|"_tage": string }
 }
 ```
@@ -48,9 +51,15 @@ Cell keys use the format `"YYYY-MM-DD"` (from `dateUtils.dateKey`). Input `data-
 
 **Calendar modal:** `calendarModal.js` renders a 7-column grid for one column's month. The `⊞` button in each column header triggers it via `data-calview="<colId>"`. Closing works by the ✕ button, clicking the backdrop, or printing via the browser print dialog (CSS hides everything except the modal during print).
 
-**Known issues (TODOs in code):**
-- `state.js:effectiveCode` duplicates `pad2`/`dateKey` logic instead of importing from `dateUtils.js` — silent breakage risk if date format changes
-- Tab navigation is broken after a re-render: `_pendingFocus` is only set via `mousedown`, not `Tab` key (`events.js`)
+**Shared code semantics:** `statusClass`, `parseNumber` and `computeColumnSums` in `state.js` are the single source for status colors (N, TD, X, U/RT, KR, TB/SV, FOBI) and the Ist/NB's/Tage totals — table, calendar modal and Excel export all use them. X days count toward "Tage" on purpose.
+
+**Edit/render cycle (`events.js`):** `input` writes to state + localStorage on every keystroke; the full re-render is deferred to `focusout` (it would destroy the focused input) and then restores focus to `e.relatedTarget` via its `data-*` key, so Tab and clicks keep working. Column delete uses a two-click confirm (`.armed`) instead of `confirm()`, because native dialogs break input focus in Electron on Windows.
+
+**Backup:** "Sichern"/"Laden" in the top bar export/import the whole state as JSON (`serializeState`/`replaceState`). `replaceState`/load go through `normalizeState`, which validates and migrates old data (pre-1.2.1 `column.soll` → `soll[month]`). Automatic daily backups: `backup.js` → `window.noxusBackup` (`electron/preload.js`) → IPC `backup:save` in `electron/main.js`, written to `Sicherungen/` next to the .exe (fallback/dev: userData), newest 30 kept.
+
+**Undo:** `history.js` keeps whole-state snapshots; call `recordUndo()` right before any data change. Ctrl+Z/Ctrl+Y are handled on `document` and replace the inputs' native undo. Enter/↓ and Shift+Enter/↑ move to the same field on the next/previous day.
+
+**Layout:** `.panel` is `width: fit-content; min-width: 100%` so `.shell` scrolls both axes once there are many columns; sticky left offsets are `calc(-1 * var(--gutter))` so the day column sticks flush to the window edge.
 
 ## Styling
 
